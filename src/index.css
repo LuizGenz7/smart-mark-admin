@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE/Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+@media print {
+
+  /* hide everything */
+  body * {
+    visibility: hidden;
+  }
+
+  /* show only table area */
+  #print-area,
+  #print-area * {
+    visibility: visible;
+  }
+
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* clean styling */
+  body {
+    background: white !important;
+  }
+
+  table {
+    width: 100%;
+    border: 1px solid black !important;
+    font-size: 10px;
+  }
+
+  th, td {
+    border: 1px solid black !important;
+    color: black !important;
+    padding: 4px;
+  }
+
+  th {
+    background: #eee !important;
+  }
+
+  /* hide UI elements */
+  .no-print {
+    display: none !important;
+  }
+}
