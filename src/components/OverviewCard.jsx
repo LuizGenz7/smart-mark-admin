@@ -18,10 +18,10 @@ const OverviewCard = ({ text, sub, icon: Icon, action = () => {} }) => {
         active:scale-95
       "
     >
-      <p className="text-3xl font-bold text-orange-500">{text}</p>
-      <p className="text-xl text-slate-500 font-bold">{sub}</p>
+      <p className="text-xl md:text-3xl font-bold text-orange-500">{text}</p>
+      <p className="text-xs md:text-xl text-slate-500 font-bold">{sub}</p>
 
-      <Icon className="absolute bottom-0 right-0 size-36 text-slate-500 opacity-70" />
+      <Icon className="absolute bottom bottom-0 right-4 md:right-0 size-30 md:size-36 text-slate-500 opacity-70" />
     </button>
   );
 };

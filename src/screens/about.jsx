@@ -4,27 +4,32 @@ const About = () => {
   const year = new Date().getFullYear();
 
   return (
-    <div className="bg-slate-950 text-slate-100 min-h-screen flex justify-center p-6">
-      <div className="w-full max-w-md space-y-6">
+    <div className="bg-slate-950 text-slate-100 min-h-screen flex justify-center p-3 sm:p-6">
+
+      <div className="w-full max-w-md space-y-5 sm:space-y-6">
 
         {/* TITLE */}
         <div className="text-center">
-          <p className="text-xl font-bold">About Smart Mark</p>
+          <p className="text-lg sm:text-xl font-bold">
+            About Smart Mark
+          </p>
         </div>
 
         {/* CONTENT CARD */}
-        <div className="bg-slate-900 rounded-xl p-5 space-y-4 text-sm text-slate-400 leading-relaxed">
+        <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 space-y-4 sm:space-y-5 text-xs sm:text-sm text-slate-400 leading-relaxed">
 
           {/* BASIC INFO */}
-          <p>
-            <span className="text-white font-semibold">Developer: </span>
-            LuizGenz
-          </p>
+          <div className="space-y-1">
+            <p>
+              <span className="text-white font-semibold">Developer: </span>
+              LuizGenz
+            </p>
 
-          <p>
-            <span className="text-white font-semibold">Application: </span>
-            Smart Mark System
-          </p>
+            <p>
+              <span className="text-white font-semibold">Application: </span>
+              Smart Mark System
+            </p>
+          </div>
 
           {/* DESCRIPTION */}
           <p>
@@ -46,8 +51,8 @@ const About = () => {
           </p>
 
           {/* TERMS */}
-          <div>
-            <p className="text-white font-semibold mb-1">
+          <div className="bg-slate-950/40 p-3 rounded-xl space-y-1">
+            <p className="text-white font-semibold">
               Terms & Conditions
             </p>
             <p className="text-xs text-slate-400">
@@ -58,8 +63,8 @@ const About = () => {
           </div>
 
           {/* PRIVACY */}
-          <div>
-            <p className="text-white font-semibold mb-1">
+          <div className="bg-slate-950/40 p-3 rounded-xl space-y-1">
+            <p className="text-white font-semibold">
               Privacy Policy
             </p>
             <p className="text-xs text-slate-400">
@@ -70,8 +75,8 @@ const About = () => {
           </div>
 
           {/* PERMISSIONS */}
-          <div>
-            <p className="text-white font-semibold mb-1">
+          <div className="bg-slate-950/40 p-3 rounded-xl space-y-1">
+            <p className="text-white font-semibold">
               Permissions & Access
             </p>
             <p className="text-xs text-slate-400">
@@ -89,8 +94,8 @@ const About = () => {
           </div>
 
           {/* DATA PROTECTION */}
-          <div>
-            <p className="text-white font-semibold mb-1">
+          <div className="bg-slate-950/40 p-3 rounded-xl space-y-1">
+            <p className="text-white font-semibold">
               Data Protection
             </p>
             <p className="text-xs text-slate-400">
@@ -100,7 +105,7 @@ const About = () => {
           </div>
 
           {/* FOOTER */}
-          <div className="pt-4 border-t border-slate-800 text-center text-xs text-slate-500">
+          <div className="pt-4 border-t border-slate-800 text-center text-[11px] sm:text-xs text-slate-500">
             <p>
               Version 1.0.0 <br />
               © {year} Smart Mark. All rights reserved. <br />

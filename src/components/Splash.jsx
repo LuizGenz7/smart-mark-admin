@@ -37,7 +37,7 @@ const SplashScreen = () => {
         <div className="flex items-center justify-center gap-6">
           {/* LOGO */}
           <div
-            className={`size-40 rounded-2xl overflow-hidden bg-slate-800 flex items-center justify-center
+            className={`size-15 md:size-40 rounded-2xl overflow-hidden bg-slate-800 flex items-center justify-center
               ${stage === 0 ? "animate-pulse scale-150" : ""}
               transition-all duration-500
             `}
@@ -52,19 +52,19 @@ const SplashScreen = () => {
           {/* TEXT BLOCK */}
           <div>
             {isTypingDone && (
-              <p className="text-orange-500 text-2xl font-semibold mt-2 opacity-0 animate-[fadeIn_0.8s_ease_forwards]">
+              <p className="text-orange-500 text-sm md:text-2xl font-semibold mt-2 opacity-0 animate-[fadeIn_0.8s_ease_forwards]">
                 Smart Mark
               </p>
             )}
             {/* MAIN TYPEWRITER (NOW MAIN TITLE) */}
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <h1 className="text-base md:text-4xl font-extrabold tracking-tight">
               {text.slice(0, textIndex)}
               <span className={`${stage === 0 ? "hidden" : ""} text-orange-500 font-extralight `}>|</span>
             </h1>
 
             {/* SUBTITLE */}
             {isTypingDone && (
-              <p className="text-slate-400 text-sm mt-2 opacity-0 animate-[fadeIn_0.8s_ease_forwards]">
+              <p className="text-slate-400 text-[7px] md:text-sm  md:mt-2 opacity-0 animate-[fadeIn_0.8s_ease_forwards]">
                 Smart School Management System
               </p>
             )}
@@ -76,23 +76,23 @@ const SplashScreen = () => {
       <div className="pb-6 flex flex-col items-center text-center text-xs text-slate-500">
         {/* LINE 1 */}
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+          <span className="size-1 md:size-2 rounded-full bg-green-400 animate-pulse"></span>
 
-          <p>
+          <p className="text-[10px] md:text-base">
             Built & Designed by{" "}
-            <span className="text-orange-400 font-semibold tracking-wide">
+            <span className="text-orange-400 text-xs md:text-base font-semibold tracking-wide">
               LuizGenz
             </span>
           </p>
         </div>
 
         {/* LINE 2 */}
-        <p className="mt-1 text-[10px] text-slate-600">
+        <p className="mt-1 text-[8px] md:text-[10px] text-slate-600">
           Smart School Management System • Production Build
         </p>
 
         {/* LINE 3 */}
-        <p className="mt-1 text-[10px] text-slate-600">
+        <p className="mt-1 text-[8px] md:text-[10px] text-slate-600">
           © {new Date().getFullYear()} All rights reserved
         </p>
       </div>

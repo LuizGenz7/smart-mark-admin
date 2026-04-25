@@ -37,7 +37,7 @@ const Dashboard = () => {
   return (
     <div className="h-full overflow-hidden flex flex-col justify-start items-center">
       <p className="text-xl font-bold text-slate-500">Over View</p>
-      <div className="h-full p-4 w-full grid grid-cols-3 gap-4 overflow-y-auto pb-6">
+      <div className="h-full p-4 w-full flex flex-col md:grid md:grid-cols-3 gap-4 overflow-y-auto pb-6">
         {dashboardItems.map((i) => (
           <OverviewCard
             key={i.id}

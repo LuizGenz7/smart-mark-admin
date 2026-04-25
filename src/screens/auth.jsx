@@ -30,70 +30,75 @@ const AuthScreen = () => {
 
     try {
       await login(form.email, form.pass);
-
-      // redirect after success
       navigate("/");
     } catch (err) {
-      // error already handled in store
       console.log(err.message);
     }
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-slate-900 border flex flex-col items-center justify-center border-slate-800 rounded-2xl shadow-xl p-6 space-y-5 text-slate-100">
-      
-      {/* HEADER */}
-      <div className="flex flex-col items-center justify-center">
-        <p className="text-3xl text-orange-500 font-semibold">
-          Smart Mark
+    <div className="w-full min-h-screen flex items-center justify-center p-3 sm:p-6">
+
+      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-xl p-5 sm:p-6 space-y-5 text-slate-100">
+
+        {/* HEADER */}
+        <div className="flex flex-col items-center justify-center text-center">
+          <p className="text-2xl sm:text-3xl text-orange-500 font-semibold">
+            Smart Mark
+          </p>
+
+          <p className="tracking-[3px] sm:tracking-[4px] text-xs sm:text-sm text-slate-500">
+            Marking Made Better
+          </p>
+        </div>
+
+        <p className="text-[11px] sm:text-xs text-orange-500 text-center">
+          School Admin Panel
         </p>
-        <p className="tracking-[4px] text-sm text-slate-500">
-          Marking Made Better
-        </p>
+
+        {/* FORM */}
+        <form className="w-full space-y-3" onSubmit={submit}>
+
+          <InputField
+            type="email"
+            label="Email"
+            icon={UserIcon}
+            value={form.email}
+            onChange={(e) => update("email", e.target.value)}
+          />
+
+          <InputField
+            type="password"
+            isSecure
+            label="Password"
+            icon={LockClosedIcon}
+            value={form.pass}
+            onChange={(e) => update("pass", e.target.value)}
+          />
+
+          <PrimaryButon
+            type="submit"
+            extra="mt-4"
+            disabled={isLoading}
+          />
+
+          {/* LOADING */}
+          {isLoading && (
+            <p className="text-center text-xs text-orange-500">
+              Verifying. Please wait...
+            </p>
+          )}
+
+          {/* ERROR */}
+          {error && (
+            <p className="text-center text-xs text-red-500">
+              {error}
+            </p>
+          )}
+
+        </form>
+
       </div>
-
-      <p className="text-xs text-orange-500">School Admin Panel</p>
-
-      {/* FORM */}
-      <form className="w-full space-y-3" onSubmit={submit}>
-        
-        <InputField
-          type="email"
-          label="Email"
-          icon={UserIcon}
-          value={form.email}
-          onChange={(e) => update("email", e.target.value)}
-        />
-
-        <InputField
-          type="password"
-          isSecure
-          label="Password"
-          icon={LockClosedIcon}
-          value={form.pass}
-          onChange={(e) => update("pass", e.target.value)}
-        />
-
-        <PrimaryButon
-          type="submit"
-          extra="mt-4"
-          disabled={isLoading}
-        />
-
-        {/* LOADING */}
-        {isLoading && (
-          <p className="text-center text-xs text-orange-500">
-            Verifying. Please wait...
-          </p>
-        )}
-
-        {/* ERROR */}
-        {error && (
-          <p className="text-center text-xs text-red-500">
-            {error}
-          </p>
-        )}
-      </form>
     </div>
   );
 };

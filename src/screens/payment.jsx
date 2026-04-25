@@ -33,33 +33,35 @@ const Payment = () => {
     : `${daysRemaining} days left`;
 
   return (
-    <div className="flex items-center justify-center p-6 bg-slate-950">
-      <div className="w-full max-w-2xl bg-slate-900 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 p-4 flex justify-center">
 
-        {/* STATUS BADGE */}
-        <div
-          className={`absolute top-5 right-5 px-3 py-1 rounded-full text-xs font-semibold ${
-            isOverdue
-              ? "bg-red-500/20 text-red-400"
-              : isExpiringSoon
-              ? "bg-yellow-500/20 text-yellow-400"
-              : "bg-green-500/20 text-green-400"
-          }`}
-        >
-          {status}
-        </div>
+      <div className="w-full max-w-md space-y-4">
 
-        {/* PLAN HERO SECTION */}
-        <div className="text-center mt-2">
-          <p className="text-slate-400 text-sm uppercase tracking-widest">
+        {/* HEADER CARD */}
+        <div className="bg-slate-900 rounded-2xl p-5 relative overflow-hidden">
+
+          {/* STATUS */}
+          <div
+            className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold ${
+              isOverdue
+                ? "bg-red-500/20 text-red-400"
+                : isExpiringSoon
+                ? "bg-yellow-500/20 text-yellow-400"
+                : "bg-green-500/20 text-green-400"
+            }`}
+          >
+            {status}
+          </div>
+
+          <p className="text-slate-400 text-xs uppercase tracking-widest">
             Subscription Plan
           </p>
 
-          <h1 className="text-5xl font-extrabold text-white mt-2">
+          <h1 className="text-3xl font-extrabold text-white mt-1">
             {payment.plan}
           </h1>
 
-          <div className="flex justify-center gap-3 mt-4">
+          <div className="flex gap-2 flex-wrap mt-3">
             <span className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 text-xs">
               {meta.plan}
             </span>
@@ -69,35 +71,19 @@ const Payment = () => {
           </div>
 
           <p className="text-xs text-slate-500 mt-2">
-            {payment.cycle} • Auto detected billing structure
+            {payment.cycle} billing cycle
           </p>
         </div>
 
-        {/* DATE GRID */}
-        <div className="grid grid-cols-2 gap-4 mt-8 text-sm">
-          <div className="bg-slate-800 rounded-xl p-4">
-            <p className="text-slate-400 text-xs">Start Date</p>
-            <p className="text-white font-semibold mt-1">
-              {payment.paymentStart}
-            </p>
-          </div>
+        {/* TIME STATUS */}
+        <div className="bg-slate-900 rounded-2xl p-5 text-center">
 
-          <div className="bg-slate-800 rounded-xl p-4">
-            <p className="text-slate-400 text-xs">Due Date</p>
-            <p className="text-white font-semibold mt-1">
-              {payment.paymentDue}
-            </p>
-          </div>
-        </div>
-
-        {/* TIME LEFT BIG DISPLAY */}
-        <div className="mt-8 text-center bg-slate-800 rounded-2xl py-4">
           <p className="text-slate-400 text-xs uppercase tracking-wider">
             Time Remaining
           </p>
 
           <p
-            className={`text-xl font-bold mt-2 ${
+            className={`text-2xl font-bold mt-2 ${
               isOverdue
                 ? "text-red-400"
                 : isExpiringSoon
@@ -107,20 +93,52 @@ const Payment = () => {
           >
             {displayDays}
           </p>
+
         </div>
 
-        {/* WARNINGS */}
+        {/* DATES */}
+        <div className="grid grid-cols-2 gap-3">
+
+          <div className="bg-slate-900 rounded-xl p-4">
+            <p className="text-slate-400 text-xs">Start</p>
+            <p className="text-white font-semibold text-sm mt-1">
+              {payment.paymentStart}
+            </p>
+          </div>
+
+          <div className="bg-slate-900 rounded-xl p-4">
+            <p className="text-slate-400 text-xs">Due</p>
+            <p className="text-white font-semibold text-sm mt-1">
+              {payment.paymentDue}
+            </p>
+          </div>
+
+        </div>
+
+        {/* WARNING */}
         {isOverdue && (
-          <div className="mt-6 bg-red-500/10 text-red-400 text-sm p-4 rounded-xl">
-            ⚠ Your subscription has expired. Renew to restore access.
+          <div className="bg-red-500/10 text-red-400 text-sm p-4 rounded-xl">
+            ⚠ Your subscription has expired. Please renew to continue using the system.
           </div>
         )}
 
         {isExpiringSoon && !isOverdue && (
-          <div className="mt-6 bg-yellow-500/10 text-yellow-400 text-sm p-4 rounded-xl">
-            ⏳ Your subscription is ending soon. Consider renewing early.
+          <div className="bg-yellow-500/10 text-yellow-400 text-sm p-4 rounded-xl">
+            ⏳ Your subscription is ending soon. Renew early to avoid interruption.
           </div>
         )}
+
+        {/* CTA BUTTON */}
+        <button
+          className={`w-full py-3 rounded-xl font-semibold text-white transition ${
+            isOverdue
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-orange-500 hover:bg-orange-600"
+          }`}
+        >
+          {isOverdue ? "Renew Now" : "Manage Subscription"}
+        </button>
+
       </div>
     </div>
   );

@@ -13,10 +13,8 @@ const openLink = (url) => {
 };
 
 const sendEmail = () => openLink("mailto:genzlewis@gmail.com");
-const sendWhatsApp = () =>
-  openLink("https://wa.me/260962063468");
-const makeCall = () =>
-  openLink("tel:+260962063468");
+const sendWhatsApp = () => openLink("https://wa.me/260962063468");
+const makeCall = () => openLink("tel:+260962063468");
 
 /* ================= SCREEN ================= */
 
@@ -25,15 +23,17 @@ const Support = () => {
   const year = new Date().getFullYear();
 
   return (
-    <div className="bg-slate-950 text-slate-100 min-h-screen flex justify-center p-6">
-      <div className="w-full max-w-md space-y-6">
+    <div className="bg-slate-950 text-slate-100 min-h-screen flex justify-center p-3 sm:p-6">
+
+      <div className="w-full max-w-md space-y-5 sm:space-y-6">
 
         {/* TITLE */}
-        <div className="text-center">
-          <p className="text-xl font-bold">
+        <div className="text-center px-2">
+          <p className="text-lg sm:text-xl font-bold">
             Support the Developer
           </p>
-          <p className="text-sm text-slate-400 mt-1">
+
+          <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
             If you enjoy{" "}
             <span className="text-white font-semibold">
               Smart Mark System
@@ -43,10 +43,10 @@ const Support = () => {
         </div>
 
         {/* SUPPORT CARD */}
-        <div className="bg-slate-900 rounded-xl p-5 space-y-4">
+        <div className="bg-slate-900 rounded-2xl p-4 sm:p-5 space-y-4">
 
           <div>
-            <p className="font-semibold text-white">
+            <p className="font-semibold text-white text-sm sm:text-base">
               Buy Me a Coffee ☕
             </p>
             <p className="text-xs text-slate-400">
@@ -55,7 +55,7 @@ const Support = () => {
           </div>
 
           <div>
-            <p className="font-semibold text-white">
+            <p className="font-semibold text-white text-sm sm:text-base">
               Support & Contact
             </p>
             <p className="text-xs text-slate-400">
@@ -69,10 +69,10 @@ const Support = () => {
             {/* EMAIL */}
             <button
               onClick={sendEmail}
-              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition"
+              className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 active:scale-[0.98] transition"
             >
-              <EnvelopeIcon className="size-5 text-orange-500" />
-              <span className="text-sm text-slate-300">
+              <EnvelopeIcon className="size-5 text-orange-500 shrink-0" />
+              <span className="text-sm text-slate-300 break-all">
                 genzlewis@gmail.com
               </span>
             </button>
@@ -80,9 +80,9 @@ const Support = () => {
             {/* WHATSAPP */}
             <button
               onClick={sendWhatsApp}
-              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition"
+              className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 active:scale-[0.98] transition"
             >
-              <ChatBubbleLeftRightIcon className="size-5 text-green-500" />
+              <ChatBubbleLeftRightIcon className="size-5 text-green-500 shrink-0" />
               <span className="text-sm text-slate-300">
                 +260 962 063 468
               </span>
@@ -91,9 +91,9 @@ const Support = () => {
             {/* CALL */}
             <button
               onClick={makeCall}
-              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition"
+              className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-800 active:scale-[0.98] transition"
             >
-              <PhoneIcon className="size-5 text-blue-400" />
+              <PhoneIcon className="size-5 text-blue-400 shrink-0" />
               <span className="text-sm text-slate-300">
                 +260 962 063 468
               </span>
@@ -102,7 +102,7 @@ const Support = () => {
             {/* PRIMARY BUTTON */}
             <button
               onClick={sendWhatsApp}
-              className="w-full mt-2 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg text-sm font-medium transition"
+              className="w-full mt-2 bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white py-3 rounded-xl text-sm font-medium transition"
             >
               Chat on WhatsApp
             </button>
@@ -111,7 +111,7 @@ const Support = () => {
         </div>
 
         {/* FOOTER */}
-        <div className="text-center text-xs text-slate-500 border-t border-slate-800 pt-4">
+        <div className="text-center text-[11px] sm:text-xs text-slate-500 border-t border-slate-800 pt-4 px-2">
           <p>Thank you for supporting independent development.</p>
           <p className="mt-2">
             App Version {appVersion} <br />
