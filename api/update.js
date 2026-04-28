@@ -1,23 +1,49 @@
+function compareVersions(current, target) {
+  const a = current.split(".").map(Number);
+  const b = target.split(".").map(Number);
+
+  const len = Math.max(a.length, b.length);
+
+  for (let i = 0; i < len; i++) {
+    const x = a[i] || 0;
+    const y = b[i] || 0;
+
+    if (x < y) return -1;
+    if (x > y) return 1;
+  }
+
+  return 0;
+}
+
 export default function handler(req, res) {
-  const config = {
-    latestVersion: "54.1.0",
-    minimumVersion: "54.0.3",
-    updateUrl: "https://smart-mark-admin.vercel.app/update",
-    message: "New features + bug fixes 🔥",
-  };
+  try {
+    const config = {
+      latestVersion: "54.1.0",
+      minimumVersion: "54.0.3",
+      updateUrl: "https://smart-mark-admin.vercel.app/update",
+      message: "New features + bug fixes 🔥",
+    };
 
-  const currentVersion = req.query.version || "0.0.0";
+    const currentVersion = req.query.version || "0.0.0";
 
-  const isUpdateAvailable =
-    compareVersions(currentVersion, config.latestVersion) === -1;
+    const isUpdateAvailable =
+      compareVersions(currentVersion, config.latestVersion) === -1;
 
-  const isForceUpdate =
-    compareVersions(currentVersion, config.minimumVersion) === -1;
+    const isForceUpdate =
+      compareVersions(currentVersion, config.minimumVersion) === -1;
 
-  res.status(200).json({
-    ...config,
-    isUpdateAvailable,
-    isForceUpdate,
-    currentVersion,
-  });
+    res.status(200).json({
+      ...config,
+      isUpdateAvailable,
+      isForceUpdate,
+      currentVersion,
+    });
+  } catch (error) {
+    console.error("API ERROR:", error);
+
+    res.status(500).json({
+      error: "Server crashed",
+      message: error.message,
+    });
+  }
 }
