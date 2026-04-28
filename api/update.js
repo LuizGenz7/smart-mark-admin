@@ -5,7 +5,7 @@ const config = {
   message: "New features + bug fixes 🔥",
 };
 
-// ✅ reusable version compare
+// 🔥 Version comparison helper
 function compareVersions(current, target) {
   const a = current.split(".").map(Number);
   const b = target.split(".").map(Number);
