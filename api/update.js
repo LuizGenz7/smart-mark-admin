@@ -18,7 +18,7 @@ function compareVersions(current, target) {
 export default function handler(req, res) {
   try {
     const config = {
-      latestVersion: "1.0.1",
+      latestVersion: "1.0.0",
       minimumVersion: "1.0.0",
       updateUrl: "https://smartmarkapks.vercel.app/",
       message: "New features + bug fixes 🔥",
