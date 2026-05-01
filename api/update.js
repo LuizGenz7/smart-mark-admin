@@ -39,7 +39,6 @@ export default function handler(req, res) {
       currentVersion,
     });
   } catch (error) {
-    console.error("API ERROR:", error);
 
     res.status(500).json({
       error: "Server crashed",

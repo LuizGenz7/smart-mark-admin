@@ -39,7 +39,6 @@ export const useAuth = create((set, get) => ({
       }
 
     } catch (e) {
-      console.error("Init error:", e);
     } finally {
       set({ initialized: true });
     }

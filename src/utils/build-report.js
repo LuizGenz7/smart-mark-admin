@@ -1,17 +1,13 @@
-import { parseDDMMYYYY } from "./date-helpers";
-
-export function buildWeeklyAttendance(fullTerm) {
+export function buildWeeklyAttendance(fullTerm, pupils = []) {
   if (!fullTerm?.termDuration) return null;
 
   const start = new Date(fullTerm.termDuration.start);
   const end = new Date(fullTerm.termDuration.end);
 
-  const pupils = fullTerm.records?.[0]?.data || [];
-
   // attendance map: date -> { pupilId: status }
   const attendanceMap = {};
 
-  fullTerm.records.forEach((r) => {
+  (fullTerm.records || []).forEach((r) => {
     attendanceMap[r.date] = {};
 
     (r.data || []).forEach((p) => {
@@ -56,7 +52,7 @@ export function buildWeeklyAttendance(fullTerm) {
 
   return {
     weeks,
-    pupils,
+    pupils, // now clean: [{ id, name }]
     attendanceMap,
   };
 }

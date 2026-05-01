@@ -1,7 +1,9 @@
 import { create } from "zustand";
-import { onSnapshot, doc, updateDoc, getDoc, setDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { onSnapshot, doc, updateDoc, getDoc, setDoc, serverTimestamp, deleteDoc, collection, getDocs } from "firebase/firestore";
 
 import { db } from "../services/firebase";
+import { useAuth } from "./auth";
+import { formatDateYMD } from "../utils/date-helpers";
 
 const CACHE_KEY = "classes-cache";
 
@@ -148,6 +150,65 @@ const useClassStore = create((set, get) => {
                     loading: false,
                     error: error.message || "Something went wrong",
                 });
+            }
+        },
+        fetchTerms: async (schoolId, classId) => {
+            try {
+                if (!classId || !schoolId) throw new Error("Missing classId or schoolId");
+                const classRef = doc(db, "schools", schoolId, "classes", classId);
+                const snap = await getDoc(classRef);
+                if (!snap.exists()) throw new Error("Class not found");
+                return snap.data().availableTerms || [];
+            } catch (error) {
+                console.error("Fetch terms failed:", error);
+                set({ error: error.message });
+            }
+        },
+        fetchAttendanceData: async (schoolId, classId, termData) => {
+            try {
+                const begin = termData?.begin;
+                const end = termData?.end;
+                const term = termData.id.split('_')[0] || termData.activeTerm;
+                const year = new Date().getFullYear();
+                if (!classId || !schoolId || !term) throw new Error("Missing classId, schoolId, or term");
+                const attRef = collection(db, "schools", schoolId, "classes", classId, "attendance", String(year), term);
+                const pupilsRef = doc(db, "schools", schoolId, "classes", classId);
+                const pupilsSnap = await getDoc(pupilsRef);
+                if (!pupilsSnap.exists()) throw new Error("Class not found");
+                const pupils = pupilsSnap.data().pupils || [];
+                const snap = await getDocs(attRef);
+
+                if (snap.empty) throw new Error("Attendance data not found");
+                const data = snap.docs.map(d => ({
+                    ...d.data()
+                }));
+
+                let records = [];
+
+                for (let i = 0; i < (data?.length || 0); i++) {
+                    const record = data[i]?.records;
+
+                    if (!Array.isArray(record)) continue;
+
+                    for (let j = 0; j < record.length; j++) {
+                        const date = formatDateYMD(record[j]?.date);
+                        const data = record[j]?.data;
+                        if (!date || !data) continue;
+                        records.push({ date, data });
+                    }
+                }
+
+                const sortedData = {
+                    termDuration: {
+                        start: formatDateYMD(begin),
+                        end: formatDateYMD(end)
+                    },
+                    records
+                }
+                return { sortedData, pupils };
+            } catch (error) {
+                console.error("Fetch attendance data failed:", error);
+                set({ error: error.message });
             }
         },
         addClass: async (schoolId, name) => {

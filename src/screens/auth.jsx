@@ -32,7 +32,6 @@ const AuthScreen = () => {
       await login(form.email, form.pass);
       navigate("/");
     } catch (err) {
-      console.log(err.message);
     }
   }
 

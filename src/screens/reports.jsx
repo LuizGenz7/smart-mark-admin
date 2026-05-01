@@ -1,72 +1,83 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import PrimaryButon from "../components/PrimaryButon";
 import { buildWeeklyAttendance } from "../utils/build-report";
+import useClassStore from "../stores/classes";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { useAuth } from "../stores/auth";
+import useTermStore from "../stores/terms";
+import { useDrawerStore } from "../stores/drawer";
 
-/* ================= TEST DATA ================= */
-
-const STATUSES = ["P", "A", "S", "H"];
-
-const randomStatus = () =>
-  STATUSES[Math.floor(Math.random() * STATUSES.length)];
-
-const generatePupils = (count = 50) =>
-  Array.from({ length: count }).map((_, i) => ({
-    id: i + 1,
-    name: `Student ${i + 1}`,
-  }));
-
-const getAllDates = (start, end) => {
-  const dates = [];
-  const current = new Date(start);
-  const last = new Date(end);
-
-  while (current <= last) {
-    dates.push(new Date(current).toISOString().split("T")[0]);
-    current.setDate(current.getDate() + 1);
-  }
-
-  return dates;
-};
-
-const pupils = generatePupils(50);
-const dates = getAllDates("2026-01-11", "2026-04-10");
-
-const fullTermMock = {
-  termDuration: {
-    start: "2026-01-11",
-    end: "2026-04-10",
-  },
-
-  records: dates.map((date) => ({
-    date,
-    data: pupils.map((p) => ({
-      id: p.id,
-      name: p.name,
-      status: randomStatus(),
-    })),
-  })),
-};
+/* ================= COMPONENT ================= */
 
 const Reports = () => {
-  const [active, setActive] = useState(null);
+  const [fetchedData, setFetchedData] = useState(null);
+
+  const [selectedFetch, setSelectedFetch] = useState(null);
+  const classes = useClassStore((s) => s.classes);
+  const fetchTerms = useClassStore((s) => s.fetchTerms);
+  const fetchAttendanceData = useClassStore((s) => s.fetchAttendanceData);
+  const [activeId, setActiveId] = useState(null);
   const [showTable, setShowTable] = useState(false);
+  const [selectedData, setSelectedData] = useState(null);
+  const toggleCollapsed = useDrawerStore((s) => s.forceClose);
+  const user = useAuth((s) => s.user);
+  const terms = useTermStore((s) => s.terms);
+  // Attendance data
+  const [attendanceData, setAttendanceData] = useState(null);
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  const data = Array.from({ length: 10 }).map((_, i) => ({
-    grade: `Grade ${i + 1}`,
-    term: "Term 1",
-  }));
+  const handleFetchTerms = async (classId) => {
+    try {
+      const now = Date.now();
 
-  function handleSelect(grade, term) {
-    setActive({ grade, term });
-    setShowTable(false);
-  }
+      // existing cache entry
+      const cachedEntry = fetchedData?.[classId];
 
-  const reportData = useMemo(() => {
-    if (!showTable) return null;
-    return buildWeeklyAttendance(fullTermMock);
-  }, [showTable]);
+      // check if valid cache exists
+      if (
+        cachedEntry &&
+        cachedEntry.data &&
+        cachedEntry.timestamp &&
+        now - cachedEntry.timestamp < CACHE_DURATION
+      ) {
+        setSelectedFetch({ classId, terms: cachedEntry.data });
+        return; // still fresh, no fetch needed
+      }
 
-  /* ================= PRINT FUNCTION ================= */
+      const terms = await fetchTerms(user?.schoolId, classId);
+      setSelectedFetch({ classId, terms });
+      setFetchedData((prev) => ({
+        ...prev,
+        [classId]: {
+          data: terms,
+          timestamp: now,
+        },
+      }));
+    } catch (error) {}
+  };
+
+  const handleAttendanceFetch = async (classId, term) => {
+    try {
+      const isFound = terms.find(
+        (t) => (t.id.split("_")[0] || t.activeTerm) === term,
+      );
+      if (!isFound) {
+        return;
+      }
+      const { sortedData, pupils } = await fetchAttendanceData(
+        user?.schoolId,
+        classId,
+        isFound,
+      );
+      const final = buildWeeklyAttendance(sortedData, pupils);
+      toggleCollapsed();
+      setAttendanceData(final);
+      setShowTable(true);
+    } catch (error) {}
+  };
+
+  /* ================= PRINT ================= */
+
   const handlePrint = () => {
     const el = document.getElementById("print-area");
     const title = document.getElementById("term-title");
@@ -79,14 +90,8 @@ const Reports = () => {
         <head>
           <title>Attendance Report</title>
           <style>
-            body {
-              font-family: Arial;
-              padding: 20px;
-              
-            }
-             h2,h4 {
-             text-align: center;
-             }
+            body { font-family: Arial; padding: 20px; }
+            h2 { text-align: center; }
 
             table {
               width: 100%;
@@ -98,21 +103,17 @@ const Reports = () => {
               padding: 5px;
               text-align: center;
               font-size: 10px;
+              text-transform: uppercase;
             }
 
             th {
               background: #111;
               color: white;
             }
-
-            .text-green { color: green; }
-            .text-red { color: red; }
-            .text-gray { color: gray; }
-
           </style>
         </head>
         <body>
-        <h2>${title.innerHTML}</h2>
+          <h2>${title.innerHTML}</h2>
           ${el.innerHTML}
         </body>
       </html>
@@ -127,138 +128,196 @@ const Reports = () => {
     }, 300);
   };
 
-  const renderTable = (weeks, title) => (
-    <div className="mb-10 bg-slate-900 rounded-xl p-4">
-      {title && (
-        <h4 className="text-slate-500 text-center font-bold mb-3">{title}</h4>
-      )}
+  /* ================= TABLE ================= */
 
-      <div className="border border-slate-700 rounded-lg px-1 py-2">
-        <table className="w-full   text-center text-[10px]">
-          {/* HEADER */}
-          <thead>
-            <tr>
-              <th className="px-2" rowSpan={2} style={{ textAlign: "left" }}>
-                <div className="border border-orange-900 rounded-sm h-full py-4 px-2 w-full">
-                  Student
-                </div>
-              </th>
+  const renderTable = (weeks, title, pupils, attendanceMap) => {
+    const getStatus = (d, pupilId) => {
+      const value = attendanceMap?.[d.date]?.[pupilId];
+      return value && value[0] ? value[0].toLowerCase() : "-";
+    };
 
-              {weeks.map((week) => (
-                <th className="px-1" key={week.week} colSpan={week.days.length}>
-                  <div className="border border-orange-900 py-1 rounded-sm">
-                    W{week.week}
+    const getStatusClass = (status) => {
+      switch (status) {
+        case "p":
+          return "bg-green-500";
+        case "a":
+          return "bg-red-500";
+        case "s":
+          return "bg-orange-500";
+        case "h":
+          return "bg-blue-500";
+        default:
+          return "bg-gray-500";
+      }
+    };
+
+    return (
+      <div className="mb-10 bg-slate-900 rounded-xl p-4">
+        <h4 className="text-slate-400 text-center font-bold mb-3">{title}</h4>
+
+        <div className="border p-2 border-slate-700 rounded-sm overflow-x-auto">
+          <table className="w-full text-center text-[10px]">
+            <thead>
+              <tr>
+                <th rowSpan={2} className="text-left pr-2">
+                  <div className="border  border-slate-700 rounded-sm flex items-center px-2 text-lg h-9 w-full">
+                    Student
                   </div>
                 </th>
-              ))}
-            </tr>
 
-            <tr>
-              {weeks.map((week) =>
-                week.days.map((d) => (
-                  <th className="py-1 px-px" key={d.date}>
-                    <div className="border border-orange-900 py-1 rounded-sm">
-                      {d.day}
-                    </div>
+                {weeks.map((week) => (
+                  <th key={week.week} colSpan={week.days.length}>
+                    W{week.week}
                   </th>
-                )),
-              )}
-            </tr>
-          </thead>
+                ))}
+              </tr>
 
-          {/* BODY */}
-          <tbody>
-            {reportData.pupils.map((pupil) => (
-              <tr key={pupil.id}>
-                <td className="px-2 pb-0.5" style={{ textAlign: "left" }}>
-                  <div className="border border-orange-900 py-1 px-2 rounded-sm">
-                    {pupil.name}
-                  </div>
-                </td>
-
-                {weeks.map((week) =>
-                  week.days.map((d) => {
-                    const status =
-                      reportData.attendanceMap?.[d.date]?.[pupil.id];
-
-                    return (
-                      <td className="size-6 p-0.5" key={d.date}>
-                        <div
-                          className={`w-full flex items-center justify-center h-full rounded-sm
-                          ${
-                            status === "P"
-                              ? "bg-green-500"
-                              : status === "A"
-                                ? "bg-red-500"
-                                : status === "S"
-                                  ? "bg-orange-500"
-                                  : status === "H"
-                                    ? "bg-blue-500"
-                                    : "bg-gray-500/30"
-                          }
-                        `}
-                        >
-                          {status || "-"}
-                        </div>
-                      </td>
-                    );
-                  }),
+              <tr className="">
+                {weeks.flatMap((week) =>
+                  week.days.map((d) => (
+                    <th className="p-0.5 size-6" key={`${week.week}-${d.date}`}>
+                      <div className="border  border-slate-700 w-full size-5 flex items-center justify-center rounded-sm">
+                        {d.day}
+                      </div>
+                    </th>
+                  )),
                 )}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {pupils.map((pupil) => (
+                <tr className="" key={pupil.id}>
+                  <td className="text-left  pr-2 py-1 h-6">
+                    <div className="border  border-slate-700 h-5 flex items-center px-2 rounded-sm">
+                      {pupil.name}
+                    </div>
+                  </td>
+
+                  {weeks.flatMap((week) =>
+                    week.days.map((d) => {
+                      const status = getStatus(d, pupil.id);
+
+                      return (
+                        <td
+                          className="p-0.5 size-6"
+                          key={`${pupil.id}-${week.week}-${d.date}`}
+                        >
+                          <div
+                            className={`uppercase flex items-center justify-center size-5 rounded-sm text-white ${getStatusClass(
+                              status,
+                            )}`}
+                          >
+                            {status}
+                          </div>
+                        </td>
+                      );
+                    }),
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  /* ================= UI ================= */
 
   return (
     <div className="flex flex-col space-y-6">
       {/* TITLE */}
-      <p className="text-xl font-bold text-slate-500 text-center">
+      <p className="text-xl font-bold text-slate-400 text-center">
         Generate Reports
       </p>
 
-      {/* CLASS GRID */}
-      <div className="grid grid-cols-3 gap-4">
-        {data.map((item) => {
-          const isActive =
-            active?.grade === item.grade && active?.term === item.term;
+      {/* GRID */}
+      <div className="grid grid-cols-3 gap-4 items-start">
+        {classes.map((cls) => {
+          const isOpen = activeId === cls.id;
 
           return (
             <div
-              key={item.grade}
-              className="flex items-center justify-between bg-slate-900 p-4 rounded-xl"
+              key={cls.id}
+              className="bg-slate-900 max-w-xs rounded-xl p-4 flex flex-col h-fit"
             >
-              <p className="text-lg font-semibold text-orange-500">
-                {item.grade}
-              </p>
-
+              {/* HEADER */}
               <button
-                onClick={() => handleSelect(item.grade, item.term)}
-                className={`px-4 cursor-pointer py-2 rounded-lg text-sm ${
-                  isActive
-                    ? "bg-orange-500 text-white"
-                    : "bg-slate-800 text-slate-300"
+                onClick={() => {
+                  setActiveId(isOpen ? null : cls.id);
+                  if (!isOpen) handleFetchTerms(cls.id);
+                }}
+                className="flex items-center justify-between w-full"
+              >
+                <p className="text-orange-500 font-semibold text-lg">
+                  {cls.name}
+                </p>
+
+                <ChevronDownIcon
+                  className={`size-5 transition-transform duration-300 ${
+                    isOpen ? "rotate-180 text-orange-500" : "text-slate-400"
+                  }`}
+                />
+              </button>
+
+              {/* DROPDOWN */}
+              <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                  isOpen ? "max-h-64 opacity-100 mt-3" : "max-h-0 opacity-0"
                 }`}
               >
-                {item.term}
-              </button>
+                <p className="text-xs text-orange-500 mb-2">
+                  Available Term Data
+                </p>
+
+                {selectedFetch?.classId === cls.id ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedFetch.terms.map((c) => (
+                      <div
+                        key={c}
+                        onClick={() => {
+                          const data = { classId: cls.id, term: c };
+                          setSelectedData(data);
+                        }}
+                        className={`${selectedData?.classId === cls.id && selectedData?.term === c ? "bg-orange-500" : "bg-slate-800"} p-3 rounded-lg cursor-pointer active:bg-slate-800/60`}
+                      >
+                        <p
+                          className={`text-center ${selectedData?.classId === cls.id && selectedData?.term === c ? "text-slate-100" : "text-orange-500"} text-sm font-medium`}
+                        >
+                          {c}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-center text-slate-100">
+                    Fetching Data...
+                  </p>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* GENERATE */}
-      <PrimaryButon
-        text={
-          active?.grade ? `Generate Report For ${active.grade}` : "Select Class"
-        }
-        action={() => setShowTable(true)}
-      />
+      {/* ACTION BUTTON */}
+      <div className="w-full justify-center">
+        <PrimaryButon
+          extra="max-w-2xl "
+          text={
+            selectedData
+              ? `Generate Report for ${selectedData.classId} Term-${selectedData.term}`
+              : "Select Class Term"
+          }
+          action={() =>
+            handleAttendanceFetch(selectedData.classId, selectedData.term)
+          }
+        />
+      </div>
 
-      {/* PRINT BUTTON */}
-      {showTable && reportData && (
+      {/* PRINT */}
+      {showTable && attendanceData && (
         <button
           onClick={handlePrint}
           className="bg-green-600 text-white px-4 py-2 rounded-lg w-fit"
@@ -267,28 +326,46 @@ const Reports = () => {
         </button>
       )}
 
-      {/* TABLE SPLIT */}
-      {showTable &&
-        reportData &&
-        (() => {
-          const mid = Math.ceil(reportData.weeks.length / 2);
+      {/* TABLE */}
+      {showTable && attendanceData ? (
+        <>
+          <h1
+            id="term-title"
+            className="text-orange-400 font-bold text-center mb-3"
+          >
+            FORM 2C TERM 2
+          </h1>
 
-          return (
-            <>
-              <h1
-                id="term-title"
-                className="text-orange-400 font-bold mb-3 text-center"
-              >
-                FORM 2C TERM 2
-              </h1>
-              <div id="print-area" className="">
-                {renderTable(reportData.weeks.slice(0, mid), "Weeks 1 - Mid")}
+          <div id="print-area">
+            {(() => {
+              const mid = Math.ceil(attendanceData.weeks.length / 2);
 
-                {renderTable(reportData.weeks.slice(mid), "Weeks Mid - End")}
-              </div>
-            </>
-          );
-        })()}
+              return (
+                <>
+                  {renderTable(
+                    attendanceData.weeks.slice(0, mid),
+                    "Weeks 1 - Mid",
+                    attendanceData.pupils,
+                    attendanceData.attendanceMap,
+                  )}
+                  {renderTable(
+                    attendanceData.weeks.slice(mid),
+                    "Weeks Mid - End",
+                    attendanceData.pupils,
+                    attendanceData.attendanceMap,
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </>
+      ) : (
+        showTable && (
+          <p className="text-center text-2xl font-black text-orange-500">
+            Generating Term Report. Please Wait...
+          </p>
+        )
+      )}
     </div>
   );
 };

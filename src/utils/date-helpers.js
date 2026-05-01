@@ -52,6 +52,11 @@ export const formatDate = (dateStr) => {
     return `${day}-${month}-${year}`;
 }
 
+export const formatDateYMD = (dateStr) => {
+    const [day, month, year] = dateStr.split("-");
+    return `${year}-${month}-${day}`;
+}
+
 
 export function compareDates(dateA, dateB) {
     const d1 = parseDDMMYYYY(dateA);
