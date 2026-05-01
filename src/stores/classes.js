@@ -263,7 +263,6 @@ const useClassStore = create((set, get) => {
                 await deleteDoc(
                     doc(db, "schools", schoolId, "classes", classId)
                 );
-
                 // 2️⃣ Remove from array in school doc
                 const schoolRef = doc(db, "schools", schoolId);
                 const snap = await getDoc(schoolRef);

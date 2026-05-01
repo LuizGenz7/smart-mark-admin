@@ -6,12 +6,15 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { useAuth } from "../stores/auth";
 import useTermStore from "../stores/terms";
 import { useDrawerStore } from "../stores/drawer";
+import { db } from "../services/firebase";
+import { dbCache } from "../db/db";
 
 /* ================= COMPONENT ================= */
 
 const Reports = () => {
   const [fetchedData, setFetchedData] = useState(null);
-
+  const [err, setErr] = useState(null);
+  const [generating, setGenerating] = useState(false);
   const [selectedFetch, setSelectedFetch] = useState(null);
   const classes = useClassStore((s) => s.classes);
   const fetchTerms = useClassStore((s) => s.fetchTerms);
@@ -44,12 +47,12 @@ const Reports = () => {
         return; // still fresh, no fetch needed
       }
 
-      const terms = await fetchTerms(user?.schoolId, classId);
-      setSelectedFetch({ classId, terms });
+      const termsSolted = terms;
+      setSelectedFetch({ classId, terms: termsSolted });
       setFetchedData((prev) => ({
         ...prev,
         [classId]: {
-          data: terms,
+          data: termsSolted,
           timestamp: now,
         },
       }));
@@ -58,22 +61,62 @@ const Reports = () => {
 
   const handleAttendanceFetch = async (classId, term) => {
     try {
-      const isFound = terms.find(
-        (t) => (t.id.split("_")[0] || t.activeTerm) === term,
-      );
-      if (!isFound) {
+      setShowTable(false);
+      setAttendanceData(null);
+      setErr(null);
+      setGenerating(true);
+      const now = Date.now();
+      const cacheKey = `attendance_${classId}_${term.activeTerm}_${user?.schoolId}_${term.id}`;
+      const cached = await dbCache.cache.get(cacheKey);
+      const parsedCache = cached ? cached.value : null;
+      const CACHE_DURATION = 5 * 60 * 1000;
+
+      if (!term || !classId) {
+        setGenerating(false);
+        setErr("Please select a class and term to generate the report.");
         return;
       }
+      if (
+        cached &&
+        parsedCache &&
+        parsedCache.data.weeks &&
+        parsedCache.data.pupils &&
+        now - parsedCache.timestamp < CACHE_DURATION
+      ) {
+        setAttendanceData(parsedCache.data);
+        setShowTable(true);
+        setGenerating(false);
+        return;
+      }
+
       const { sortedData, pupils } = await fetchAttendanceData(
         user?.schoolId,
         classId,
-        isFound,
+        term,
       );
       const final = buildWeeklyAttendance(sortedData, pupils);
+      const dataCache = {
+        data: final,
+        timestamp: now,
+      };
+      await dbCache.cache.put({
+        key: cacheKey,
+        value: dataCache,
+      });
+      if (!final) {
+        setErr("No attendance data found for the selected term.");
+        return;
+      }
       toggleCollapsed();
       setAttendanceData(final);
       setShowTable(true);
-    } catch (error) {}
+    } catch (error) {
+      setErr(
+        "An error occurred while fetching attendance data. Make sure the selected term has attendance records.",
+      );
+    } finally {
+      setGenerating(false);
+    }
   };
 
   /* ================= PRINT ================= */
@@ -155,19 +198,25 @@ const Reports = () => {
       <div className="mb-10 bg-slate-900 rounded-xl p-4">
         <h4 className="text-slate-400 text-center font-bold mb-3">{title}</h4>
 
-        <div className="border p-2 border-slate-700 rounded-sm overflow-x-auto">
+        <div className="border no-scrollbar p-2 border-slate-700 rounded-sm overflow-x-auto">
           <table className="w-full text-center text-[10px]">
             <thead>
               <tr>
                 <th rowSpan={2} className="text-left pr-2">
-                  <div className="border  border-slate-700 rounded-sm flex items-center px-2 text-lg h-9 w-full">
+                  <div className="border  border-slate-700 rounded-sm flex items-center px-2 text-lg h-12 w-full">
                     Student
                   </div>
                 </th>
 
                 {weeks.map((week) => (
-                  <th key={week.week} colSpan={week.days.length}>
-                    W{week.week}
+                  <th
+                    className="px-0.5 pb-0.5"
+                    key={week.week}
+                    colSpan={week.days.length}
+                  >
+                    <div className="border rounded-sm border-slate-700 py-1">
+                      W{week.week}
+                    </div>
                   </th>
                 ))}
               </tr>
@@ -275,7 +324,7 @@ const Reports = () => {
                   <div className="grid grid-cols-2 gap-2">
                     {selectedFetch.terms.map((c) => (
                       <div
-                        key={c}
+                        key={c.id}
                         onClick={() => {
                           const data = { classId: cls.id, term: c };
                           setSelectedData(data);
@@ -285,7 +334,7 @@ const Reports = () => {
                         <p
                           className={`text-center ${selectedData?.classId === cls.id && selectedData?.term === c ? "text-slate-100" : "text-orange-500"} text-sm font-medium`}
                         >
-                          {c}
+                          {c.activeTerm}
                         </p>
                       </div>
                     ))}
@@ -302,19 +351,29 @@ const Reports = () => {
       </div>
 
       {/* ACTION BUTTON */}
-      <div className="w-full justify-center">
+      <div className="w-full flex justify-center">
         <PrimaryButon
           extra="max-w-2xl "
           text={
             selectedData
-              ? `Generate Report for ${selectedData.classId} Term-${selectedData.term}`
+              ? `Generate Report for ${selectedData.classId} ${selectedData.term.activeTerm}`
               : "Select Class Term"
           }
-          action={() =>
-            handleAttendanceFetch(selectedData.classId, selectedData.term)
-          }
+          action={() => {
+            if (!selectedData) {
+              setErr("Please select a class and term to generate the report.");
+              return;
+            }
+            handleAttendanceFetch(selectedData.classId, selectedData.term);
+          }}
         />
       </div>
+      {generating && (
+        <p className="text-center text-sm text-green-500">
+          Generating report. This may take a moment...
+        </p>
+      )}
+      {err && <p className="text-center text-sm text-red-500">{err}</p>}
 
       {/* PRINT */}
       {showTable && attendanceData && (
@@ -327,7 +386,7 @@ const Reports = () => {
       )}
 
       {/* TABLE */}
-      {showTable && attendanceData ? (
+      {showTable && attendanceData && (
         <>
           <h1
             id="term-title"
@@ -359,12 +418,6 @@ const Reports = () => {
             })()}
           </div>
         </>
-      ) : (
-        showTable && (
-          <p className="text-center text-2xl font-black text-orange-500">
-            Generating Term Report. Please Wait...
-          </p>
-        )
       )}
     </div>
   );

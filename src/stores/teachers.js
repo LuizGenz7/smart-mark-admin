@@ -184,13 +184,12 @@ const useTeacherStore = create((set, get) => {
     updateTeacherClass: async (schoolId, teacherId, newClassId) => {
       try {
         if (!schoolId || !teacherId || !newClassId) return;
-
-
         // 1️⃣ Update in users collection
         const teacherRef = doc(db, "users", teacherId);
         await updateDoc(teacherRef, {
           classId: newClassId,
         });
+        
 
         // 2️⃣ Update inside school teachers array
         const schoolRef = doc(db, "schools", schoolId);

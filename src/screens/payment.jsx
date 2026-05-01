@@ -6,6 +6,8 @@ import {
 } from "../utils/date-helpers";
 import usePaymentStore from "../stores/payment";
 import { detectPlan } from "../utils/pay";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
+import { ClockIcon } from "@heroicons/react/24/solid";
 
 const Payment = () => {
   const payment = usePaymentStore((s) => s.payment);
@@ -117,27 +119,24 @@ const Payment = () => {
 
         {/* WARNING */}
         {isOverdue && (
-          <div className="bg-red-500/10 text-red-400 text-sm p-4 rounded-xl">
-            ⚠ Your subscription has expired. Please renew to continue using the system.
-          </div>
-        )}
+  <div className="bg-red-500/10 text-red-400 text-sm p-4 rounded-xl flex items-start gap-3">
+    <ExclamationTriangleIcon className="w-5 h-5 mt-0.5 flex shrink-0" />
+    <span>
+      Your subscription has expired. Please renew to continue using the system.
+    </span>
+  </div>
+)}
 
-        {isExpiringSoon && !isOverdue && (
-          <div className="bg-yellow-500/10 text-yellow-400 text-sm p-4 rounded-xl">
-            ⏳ Your subscription is ending soon. Renew early to avoid interruption.
-          </div>
-        )}
+{isExpiringSoon && !isOverdue && (
+  <div className="bg-yellow-500/10 text-yellow-400 text-sm p-4 rounded-xl flex items-start gap-3">
+    <ClockIcon className="w-5 h-5 mt-0.5 flex shrink-0" />
+    <span>
+      Your subscription is ending soon. Renew early to avoid interruption.
+    </span>
+  </div>
+)}
 
         {/* CTA BUTTON */}
-        <button
-          className={`w-full py-3 rounded-xl font-semibold text-white transition ${
-            isOverdue
-              ? "bg-red-500 hover:bg-red-600"
-              : "bg-orange-500 hover:bg-orange-600"
-          }`}
-        >
-          {isOverdue ? "Renew Now" : "Manage Subscription"}
-        </button>
 
       </div>
     </div>

@@ -105,9 +105,9 @@ const AppLayout = () => {
   // ================= MAIN APP =================
   return (
     <div className="bg-slate-950 text-slate-100 md:flex h-screen overflow-hidden">
-      <Drawer />
+      <div className=" hidden md:block"><Drawer /></div>
 
-      <div className="flex flex-col flex-1 h-screen">
+      <div className="hidden md:flex flex-col flex-1 h-screen">
         <Header />
 
         <div className="flex-1 no-scrollbar overflow-auto p-4">

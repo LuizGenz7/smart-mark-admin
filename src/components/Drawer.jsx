@@ -85,13 +85,13 @@ const Drawer = () => {
   ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
         {/* HEADER */}
-        <div className="h-20 flex items-center justify-between px-4 border-b border-slate-800">
+        <div className="h-20 flex no-scrollbar items-center justify-between px-4 border-b border-slate-800">
           <div
             className={`flex ${collapsed ? "justify-center" : "justify-between"} items-center w-full`}
           >
             {!collapsed && (
               <div
-                className={`transition-all duration-900 ease-in-out ${collapsed ? "opacity-0 delay-300 translate-x-2 pointer-events-none" : "opacity-100 translate-x-0 delay-300"}`}
+                className={`transition-all duration-900 ease-in-out overflow-hidden ${collapsed ? " opacity-0 delay-300 w-0 -translate-x-250 pointer-events-none" : "w-full opacity-100 translate-x-0 delay-300"}`}
               >
                 <p className="text-orange-500 font-bold">Smart Mark</p>
                 <p className="text-xs text-slate-500">School Admin</p>
@@ -103,9 +103,9 @@ const Drawer = () => {
               onClick={toggleCollapsed}
             >
               {collapsed ? (
-                <ChevronRightIcon className="size-5" />
+                <ChevronRightIcon className="size-4" />
               ) : (
-                <ChevronLeftIcon className="size-5" />
+                <ChevronLeftIcon className="size-4" />
               )}
             </button>
           </div>
@@ -117,7 +117,7 @@ const Drawer = () => {
         </div>
 
         {/* MENU */}
-        <div className="flex-1 flex flex-col items-center overflow-y-auto p-2 space-y-1">
+        <div className="flex-1 flex flex-col items-center no-scrollbar overflow-y-auto p-2 space-y-1">
           {menu.map((item) => (
             <NavLink
               key={item.id}
